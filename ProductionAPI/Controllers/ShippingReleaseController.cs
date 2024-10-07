@@ -130,5 +130,59 @@ namespace ProductionAPI.Controllers
             }
             return BadRequest();
         }
+        [HttpPut("Ship/{fullShippingLabel}/{skidSerial1}/{skidSerial2}/{skidSerial3}/{skidSerial4}/{skidSerial5}/{skidSerial6}/{skidSerial7}/{skidSerial8}")]
+        public async Task<IActionResult> PutServiceSkid(string fullShippingLabel, string skidSerial1, string skidSerial2, string skidSerial3, string skidSerial4, string skidSerial5, string skidSerial6, string skidSerial7, string skidSerial8)
+        {
+            if (!string.IsNullOrWhiteSpace(fullShippingLabel) && 
+                !string.IsNullOrWhiteSpace(skidSerial1) &&
+                (!string.IsNullOrWhiteSpace(skidSerial2) ||
+                !string.IsNullOrWhiteSpace(skidSerial3) ||
+                !string.IsNullOrWhiteSpace(skidSerial4) ||
+                !string.IsNullOrWhiteSpace(skidSerial5) ||
+                !string.IsNullOrWhiteSpace(skidSerial6) ||
+                !string.IsNullOrWhiteSpace(skidSerial7) ||
+                !string.IsNullOrWhiteSpace(skidSerial8)))
+            {
+                try
+                {
+                    //var results = new List<ShipSkid>();
+
+                    using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+                    {
+                        await con.OpenAsync();
+
+                        using (SqlCommand cmd = new SqlCommand("WRITE_FR_SERVICE_SHIPPING_RELEASE", con))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.Parameters.AddWithValue("@Full_Shipping_Label", fullShippingLabel);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_01", skidSerial1);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_02", skidSerial2);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_03", skidSerial3);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_04", skidSerial4);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_05", skidSerial5);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_06", skidSerial6);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_07", skidSerial7);
+                            cmd.Parameters.AddWithValue("@SkidSerialNumber_08", skidSerial8);
+
+                            int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                            if (rowsAffected > 0)
+                            {
+                                return Ok("Updated Succesfully");
+                            }
+                            else
+                            {
+                                return NotFound("Skid Not Found");
+                            }
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Internal server error: {ex.Message}, StackTrace: {ex.StackTrace}");
+                }
+            }
+            return BadRequest();
+        }
     }
 }
